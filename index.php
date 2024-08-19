@@ -9,7 +9,7 @@
     <!-- Croppie CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" rel="stylesheet">
     <style>
-        #preview-area {
+        #croppie-demo {
             width: 100%;
             height: 1cm;
         }
@@ -25,7 +25,7 @@
         </div>
     </div>
     <div class="row">
-        <div id="preview-area" class="col-md-6 col-md-offset-3 mt-4"></div>
+        <div id="croppie-demo" class="col-md-6 col-md-offset-3 mt-4"></div>
     </div>
     <div class="row">
         <div class="col-md-6 col-md-offset-3 text-center mt-4">
@@ -47,25 +47,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
 
 <script>
-    /**
-     * Initializes the Croppie image cropper and handles image upload, cropping, and displaying the cropped result.
-     */
     $(document).ready(function () {
         var croppieInstance;
 
-        /**
-         * Initializes the Croppie instance when an image is uploaded.
-         * 
-         * @param {Event} event - The change event triggered when an image file is selected.
-         */
-        $('#upload-image').on('change', function (event) {
+        // Initialize Croppie
+        $('#upload-image').on('change', function () {
             var reader = new FileReader();
             reader.onload = function (e) {
                 if (croppieInstance) {
                     croppieInstance.destroy();
                 }
-                croppieInstance = $('#preview-area').croppie({
-                    viewport: {width: 200, height: 100, type: 'triangle'},
+                croppieInstance = $('#croppie-demo').croppie({
+                    viewport: {width: 300, height: 300, type: 'square'},
                     boundary: {width: 400, height: 400},
                     url: e.target.result
                 });
@@ -73,23 +66,30 @@
             reader.readAsDataURL(this.files[0]);
         });
 
-        /**
-         * Handles the cropping of the image and displays the cropped result.
-         * 
-         * @param {Event} event - The click event triggered when the crop button is clicked.
-         */
-
-        $('#crop-image').on('click', function (event) {
+        // Handle Crop and Save
+        $('#crop-image').on('click', function () {
             croppieInstance.croppie('result', {
                 type: 'canvas',
                 size: 'viewport'
             }).then(function (croppedImage) {
+                // Display the cropped image
                 $('#cropped-result').attr('src', croppedImage);
-                // Optionally, you can send `croppedImage` to the server via AJAX
+
+                // Send the cropped image data to the server via AJAX
+                $.ajax({
+                    url: 'save_image.php',
+                    type: 'POST',
+                    data: {image: croppedImage},
+                    success: function (response) {
+                        alert('Image saved successfully!');
+                    },
+                    error: function () {
+                        alert('An error occurred while saving the image.');
+                    }
+                });
             });
         });
     });
 </script>
-
 </body>
 </html>
